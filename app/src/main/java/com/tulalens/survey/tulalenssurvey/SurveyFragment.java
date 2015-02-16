@@ -107,7 +107,7 @@ public class SurveyFragment extends Fragment implements AbsListView.OnItemClickL
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            mListener.onSurveyFragmentInteraction(mAdapter.get(position));
         }
     }
 
@@ -136,7 +136,7 @@ public class SurveyFragment extends Fragment implements AbsListView.OnItemClickL
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        public void onFragmentInteraction(String id);
+        public void onSurveyFragmentInteraction(String objectID);
     }
 
 }

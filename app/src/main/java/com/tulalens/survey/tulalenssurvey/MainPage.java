@@ -1,6 +1,7 @@
 package com.tulalens.survey.tulalenssurvey;
 
 import android.app.Activity;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -24,7 +25,7 @@ import com.parse.ui.ParseLoginBuilder;
 
 
 public class MainPage extends ActionBarActivity
-        implements NavigationDrawerFragment.NavigationDrawerCallbacks, SurveyFragment.OnFragmentInteractionListener, SyncService.OnSyncInteractionListener {
+        implements NavigationDrawerFragment.NavigationDrawerCallbacks, SurveyFragment.OnFragmentInteractionListener, SyncService.OnSyncInteractionListener, SettingsFragment.OnFragmentInteractionListener, EngineFragment.OnFragmentInteractionListener {
 
     /**
      * Fragment managing the behaviors, interactions and presentation of the navigation drawer.
@@ -74,6 +75,10 @@ public class MainPage extends ActionBarActivity
             case 0:
                 fragment = SurveyFragment.newInstance();
                 break;
+            case 1:
+                Log.d("Nav", "Switching to settings");
+                fragment = SettingsFragment.newInstance();
+                break;
             default:
                 fragment = PlaceholderFragment.newInstance(position + 1);
                 break;
@@ -89,6 +94,9 @@ public class MainPage extends ActionBarActivity
             case 1:
                 mTitle = getString(R.string.title_section1);
                 break;
+            case 2:
+                mTitle = getString(R.string.title_section2);
+                break;
         }
     }
 
@@ -98,8 +106,6 @@ public class MainPage extends ActionBarActivity
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setTitle(mTitle);
     }
-
-
 
 
     @Override
@@ -122,22 +128,33 @@ public class MainPage extends ActionBarActivity
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void onFragmentInteraction(String id) {
+    public void onSurveyFragmentInteraction(String objectID) {
+        Log.d("Main", "Click");
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = EngineFragment.newInstance(objectID);
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, fragment)
+                .commit();
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
         Log.d("Main", "Click");
     }
 
     @Override
     public void onSyncComplete(Boolean status) {
         Log.d("Main", "Sync done");
+        onNavigationDrawerItemSelected(0);
+    }
+
+    @Override
+    public void onEngineFragmentInteraction(String data){
+
     }
 
     /**

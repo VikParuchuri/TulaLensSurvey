@@ -30,6 +30,11 @@ public class SurveyAdapter extends ParseQueryAdapter implements AdapterView.OnIt
         });
     }
 
+
+    public String get(int position){
+        return this.getItem(position).getObjectId();
+    }
+
     @Override
     public View getItemView(ParseObject object, View cellview, ViewGroup parent) {
         if (cellview == null) {

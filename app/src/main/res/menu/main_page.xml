@@ -3,6 +3,4 @@
     xmlns:tools="http://schemas.android.com/tools" tools:context=".MainPage">
     <item android:id="@+id/action_sync" android:title="@string/action_sync"
         app:showAsAction="withText|ifRoom" />
-    <item android:id="@+id/action_settings" android:title="@string/action_settings"
-        android:orderInCategory="100" app:showAsAction="never" />
 </menu>
