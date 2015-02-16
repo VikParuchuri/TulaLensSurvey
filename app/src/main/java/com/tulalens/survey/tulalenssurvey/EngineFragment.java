@@ -1,6 +1,7 @@
 package com.tulalens.survey.tulalenssurvey;
 
 import android.app.Activity;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -8,8 +9,11 @@ import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.parse.ParseException;
@@ -34,6 +38,9 @@ public class EngineFragment extends Fragment {
     private ParseObject mCurrentScreen;
     private ParseQuery mScreenQuery;
     private View mcurrentView;
+    private int screenCount;
+    private ViewGroup mContainer;
+    private LayoutInflater inflater;
 
     // TODO: Rename and change types and number of parameters
     public static EngineFragment newInstance(String objectID) {
@@ -49,23 +56,61 @@ public class EngineFragment extends Fragment {
     }
 
     public LinearLayout getLayout(ParseObject screen){
-        LinearLayout layout = new LinearLayout(getActivity());
-        LinearLayout.LayoutParams LLParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.MATCH_PARENT);
 
-        layout.setLayoutParams(LLParams);
+        String type = screen.getString("type");
+        LinearLayout layout;
 
-        TextView question = new TextView(getActivity());
+        int id;
+        switch(type){
+            case "text":
+                id = R.layout.text_screen;
+                break;
+            case "choice_single":
+                id = R.layout.single_choice_screen;
+                break;
+            case "choice_multiple":
+                id = R.layout.multiple_choice_screen;
+                break;
+            case "integer":
+                id = R.layout.integer_screen;
+                break;
+            default:
+                id = R.layout.text_screen;
+                break;
+        }
+
+        layout = (LinearLayout) getActivity().getLayoutInflater().inflate(id, null, false);
+
+        TextView question = (TextView) layout.findViewById(R.id.question);
         question.setText(screen.getString("question"));
-        layout.addView(question);
 
-        Button nextButton = new Button(getActivity());
-        nextButton.setText(getString(R.string.button_next));
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                nextScreen();
-            }
-        });
+        Button nextButton = (Button) layout.findViewById(R.id.next_button);
+        if(screen.getInt("screen_number") < screenCount) {
+            nextButton.setText(getString(R.string.button_next));
+            nextButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    nextScreen();
+                }
+            });
+        } else {
+            nextButton.setText(getString(R.string.button_end));
+            nextButton.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
+                    endSurvey();
+                }
+            });
+        }
+
+        if(type.equals("choice_single") || type.equals("choice_multiple")){
+
+        }
+
         return layout;
+    }
+
+    public void endSurvey(){
+        MainPage page = (MainPage) getActivity();
+        page.onNavigationDrawerItemSelected(0);
     }
 
     public void setupScreen(){
@@ -144,15 +189,31 @@ public class EngineFragment extends Fragment {
         } catch (ParseException e){
             return;
         }
-        mcurrentView = getView();
-        setupScreen();
+        try {
+            screenCount = screenQuery.count();
+        } catch (ParseException e){
+            return;
+        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_engine, container, false);
+        final View v = inflater.inflate(R.layout.fragment_engine, container, false);
+        mContainer = container;
+        ViewTreeObserver observer = v.getViewTreeObserver();
+
+        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+
+            @Override
+            public void onGlobalLayout() {
+                v.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+                mcurrentView = v;
+                setupScreen();
+            }
+        });
+        return v;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
