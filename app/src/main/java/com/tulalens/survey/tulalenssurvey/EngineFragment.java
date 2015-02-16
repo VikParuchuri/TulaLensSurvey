@@ -27,6 +27,7 @@ import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 /**
@@ -49,6 +50,7 @@ public class EngineFragment extends Fragment {
     private int screenCount;
     private ViewGroup mContainer;
     private LayoutInflater inflater;
+    private String sessionID;
 
     // TODO: Rename and change types and number of parameters
     public static EngineFragment newInstance(String objectID) {
@@ -132,8 +134,12 @@ public class EngineFragment extends Fragment {
                 }
                 ((ViewGroup) layout.findViewById(R.id.multiple_buttons)).addView(ll);
             }
-        } else if (type.equals("text") || type.equals("integer")){
+        } else if (type.equals("text")){
             EditText input = (EditText) layout.findViewById(R.id.text_input);
+            input.setId(3);
+        } else if (type.equals("integer")){
+
+            EditText input = (EditText) layout.findViewById(R.id.integer);
             input.setId(3);
         }
 
@@ -146,16 +152,18 @@ public class EngineFragment extends Fragment {
         object.put("screen", mCurrentScreen);
         int nextScreen = mCurrentScreen.getInt("screen_number") + 1;
         object.put("collector", ParseUser.getCurrentUser());
+        object.put("session", sessionID);
 
         if (type.equals("text") || type.equals("integer")) {
             EditText text = (EditText) mCurrentView.findViewById(3);
-            object.put("response", text);
+            String value = text.getText().toString();
+            object.put("response", value);
         } else if (type.equals("choice_single") || type.equals("choice_multiple")){
             List<String> options = mCurrentScreen.getList("options");
             if(type.equals("choice_single")){
                 int idx = -1;
                 for(int i=0;i < options.size(); i++){
-                    CheckBox check = (CheckBox) mCurrentView.findViewById(i + 15);
+                    RadioButton check = (RadioButton) mCurrentView.findViewById(i + 15);
                     if(check.isChecked()){
                         idx = i;
                     }
@@ -273,6 +281,8 @@ public class EngineFragment extends Fragment {
         } catch (ParseException e){
             return;
         }
+
+        sessionID = UUID.randomUUID().toString();
     }
 
     @Override
