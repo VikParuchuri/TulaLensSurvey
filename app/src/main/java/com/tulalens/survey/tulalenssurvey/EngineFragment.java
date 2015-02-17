@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +52,7 @@ public class EngineFragment extends Fragment {
     private ViewGroup mContainer;
     private LayoutInflater inflater;
     private String sessionID;
+    private String PINLABEL = "screen_answer_pin";
 
     // TODO: Rename and change types and number of parameters
     public static EngineFragment newInstance(String objectID) {
@@ -87,6 +89,13 @@ public class EngineFragment extends Fragment {
             default:
                 id = R.layout.text_screen;
                 break;
+        }
+
+        ParseObject object = getScreenAnswer();
+        try {
+            object.pin(PINLABEL);
+        } catch(ParseException e){
+
         }
 
         layout = (LinearLayout) getActivity().getLayoutInflater().inflate(id, null, false);
@@ -143,16 +152,57 @@ public class EngineFragment extends Fragment {
             input.setId(3);
         }
 
+        SeekBar seekBar = (SeekBar) layout.findViewById(R.id.seekBar);
+
+        seekBar.setMax(screenCount);
+        seekBar.setProgress(mCurrentScreen.getInt("screen_number"));
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // TODO Auto-generated method stub
+            }
+
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                // TODO Auto-generated method stub
+                if(progress > 0 && progress <= screenCount) {
+                    saveSurvey();
+                    mCurrentScreen = getScreen(progress);
+                    setupScreen();
+                }
+            }
+        });
+
         return layout;
     }
 
-    public int saveSurvey(){
-        String type = mCurrentScreen.getString("type");
+    public ParseObject getScreenAnswer(){
+        ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("ScreenAnswer");
+        query.fromPin(PINLABEL);
+        query.whereEqualTo("screen", mCurrentScreen);
         ParseObject object = new ParseObject("ScreenAnswer");
         object.put("screen", mCurrentScreen);
-        int nextScreen = mCurrentScreen.getInt("screen_number") + 1;
         object.put("collector", ParseUser.getCurrentUser());
         object.put("session", sessionID);
+        try {
+            object = query.getFirst();
+        } catch (Exception e){
+
+        }
+        return object;
+    }
+
+    public int saveSurvey(){
+        ParseObject object = getScreenAnswer();
+        String type = mCurrentScreen.getString("type");
+
+        int nextScreen = mCurrentScreen.getInt("screen_number") + 1;
 
         if (type.equals("text") || type.equals("integer")) {
             EditText text = (EditText) mCurrentView.findViewById(3);
@@ -187,7 +237,11 @@ public class EngineFragment extends Fragment {
                 object.put("choices", selectedChoices);
             }
         }
-        object.saveEventually();
+        try {
+            object.save();
+        } catch (ParseException e){
+
+        }
         return nextScreen;
     }
 
@@ -195,6 +249,23 @@ public class EngineFragment extends Fragment {
         saveSurvey();
         MainPage page = (MainPage) getActivity();
         page.onNavigationDrawerItemSelected(0);
+        ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("ScreenAnswer");
+        query.fromPin(PINLABEL);
+        List<ParseObject> results;
+        try {
+            results = query.find();
+        } catch(ParseException e){
+            return;
+        }
+
+        try {
+            ParseObject.unpinAll(PINLABEL, query.find());
+        } catch(ParseException e){
+        }
+
+        for(int i=0;i < results.size(); i++){
+            results.get(i).saveEventually();
+        }
     }
 
     public void setupScreen(){

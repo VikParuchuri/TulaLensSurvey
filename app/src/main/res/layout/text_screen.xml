@@ -27,4 +27,12 @@
         android:id="@+id/next_button"
         android:layout_weight="0.08"
         android:layout_gravity="right" />
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/seekBar"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.08"
+        android:indeterminate="false" />
 </LinearLayout>
