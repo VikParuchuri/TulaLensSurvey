@@ -118,13 +118,13 @@ public class EngineFragment extends Fragment {
             LinearLayout ll = new LinearLayout(getActivity());
             ll.setOrientation(LinearLayout.VERTICAL);
             if(type.equals("choice_single")) {
+                RadioGroup radioGroup = (RadioGroup) layout.findViewById(R.id.radio_group);
                 for (int i = 0; i < choices.size(); i++) {
                     RadioButton rdbtn = new RadioButton(getActivity());
                     rdbtn.setId(i + 15);
                     rdbtn.setText(choices.get(i));
-                    ll.addView(rdbtn);
+                    radioGroup.addView(rdbtn);
                 }
-                ((ViewGroup) layout.findViewById(R.id.radio_group)).addView(ll);
             } else {
                 for (int i = 0; i < choices.size(); i++) {
                     CheckBox check = new CheckBox(getActivity());

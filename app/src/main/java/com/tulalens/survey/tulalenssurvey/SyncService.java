@@ -33,6 +33,7 @@ public class SyncService {
     }
 
     public boolean doSync(){
+        ParseQuery unpinQuery = new ParseQuery("Survey");
         ParseQuery query = new ParseQuery("Survey");
         query.whereEqualTo("use", true);
         List<ParseObject> surveyList;
@@ -43,7 +44,7 @@ public class SyncService {
         }
         // Release any objects previously pinned for this query.
         try {
-            ParseObject.unpinAll(SCREENS_LABEL, surveyList);
+            ParseObject.unpinAll(SCREENS_LABEL, unpinQuery.find());
         } catch(ParseException error){
 
         }
