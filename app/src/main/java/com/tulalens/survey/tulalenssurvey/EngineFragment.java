@@ -127,28 +127,47 @@ public class EngineFragment extends Fragment {
             LinearLayout ll = new LinearLayout(getActivity());
             ll.setOrientation(LinearLayout.VERTICAL);
             if(type.equals("choice_single")) {
+                String choice = object.getString("choice");
                 RadioGroup radioGroup = (RadioGroup) layout.findViewById(R.id.radio_group);
                 for (int i = 0; i < choices.size(); i++) {
                     RadioButton rdbtn = new RadioButton(getActivity());
                     rdbtn.setId(i + 15);
                     rdbtn.setText(choices.get(i));
+                    if(choice != null){
+                        if(choice.equals(choices.get(i))){
+                            rdbtn.setChecked(true);
+                        }
+                    }
                     radioGroup.addView(rdbtn);
                 }
             } else {
+                List<String> answerChoices = object.getList("choices");
                 for (int i = 0; i < choices.size(); i++) {
                     CheckBox check = new CheckBox(getActivity());
                     check.setId(i + 15);
                     check.setText(choices.get(i));
+                    if(answerChoices != null) {
+                        if (answerChoices.contains(choices.get(i))) {
+                            check.setChecked(true);
+                        }
+                    }
                     ll.addView(check);
                 }
                 ((ViewGroup) layout.findViewById(R.id.multiple_buttons)).addView(ll);
             }
         } else if (type.equals("text")){
+            String text = object.getString("response");
             EditText input = (EditText) layout.findViewById(R.id.text_input);
+            if(text != null){
+                input.setText(text);
+            }
             input.setId(3);
         } else if (type.equals("integer")){
-
+            String text = object.getString("response");
             EditText input = (EditText) layout.findViewById(R.id.integer);
+            if(text != null){
+                input.setText(text);
+            }
             input.setId(3);
         }
 
@@ -161,6 +180,18 @@ public class EngineFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 // TODO Auto-generated method stub
+                int progress = seekBar.getProgress();
+                if(progress < 1){
+                    seekBar.setProgress(1);
+                    progress = 1;
+                }
+                if(progress > screenCount){
+                    seekBar.setProgress(screenCount);
+                    progress = screenCount;
+                }
+                saveSurvey();
+                mCurrentScreen = getScreen(progress);
+                setupScreen();
             }
 
             @Override
@@ -171,11 +202,6 @@ public class EngineFragment extends Fragment {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 // TODO Auto-generated method stub
-                if(progress > 0 && progress <= screenCount) {
-                    saveSurvey();
-                    mCurrentScreen = getScreen(progress);
-                    setupScreen();
-                }
             }
         });
 
@@ -186,6 +212,7 @@ public class EngineFragment extends Fragment {
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("ScreenAnswer");
         query.fromPin(PINLABEL);
         query.whereEqualTo("screen", mCurrentScreen);
+        query.whereEqualTo("session", sessionID);
         ParseObject object = new ParseObject("ScreenAnswer");
         object.put("screen", mCurrentScreen);
         object.put("collector", ParseUser.getCurrentUser());
@@ -251,6 +278,7 @@ public class EngineFragment extends Fragment {
         page.onNavigationDrawerItemSelected(0);
         ParseQuery<ParseObject> query = new ParseQuery<ParseObject>("ScreenAnswer");
         query.fromPin(PINLABEL);
+        query.whereEqualTo("session", sessionID);
         List<ParseObject> results;
         try {
             results = query.find();
